@@ -10,7 +10,7 @@ link:
 	npm link
 
 start:
-	cd ~/.n8n/custom && npm link @devlikeapro/n8n-nodes-petstore && n8n start
+	cd ~/.n8n/custom && npm link n8n-nodes-shippo && n8n start
 
 tests:
 	npm run test
@@ -25,6 +25,3 @@ dev:
 
 clean:
 	rm -rf ./dist
-
-up-swagger:
-	wget -qO- https://petstore3.swagger.io/api/v3/openapi.json | jq '.' > ./nodes/Petstore/openapi.json

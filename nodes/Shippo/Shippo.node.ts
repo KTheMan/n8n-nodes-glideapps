@@ -6,24 +6,24 @@ const config: N8NPropertiesBuilderConfig = {}
 const parser = new N8NPropertiesBuilder(doc, config);
 const properties = parser.build()
 
-export class Petstore implements INodeType {
+export class Shippo implements INodeType {
     description: INodeTypeDescription = {
-        displayName: 'Petstore',
-        name: 'petstore',
+        displayName: 'Shippo',
+        name: 'shippo',
         icon: 'file:logo.svg',
         group: ['transform'],
         version: 1,
         subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-        description: 'Interact with Petstore API',
+        description: 'Interact with Shippo API',
         defaults: {
-            name: 'Petstore',
+            name: 'Shippo',
         },
         inputs: ['main'],
         outputs: ['main'],
         credentials: [
             {
-                name: 'petstoreApi',
-                required: false,
+                name: 'shippoApi',
+                required: true,
             },
         ],
         requestDefaults: {
@@ -31,7 +31,7 @@ export class Petstore implements INodeType {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            baseURL: 'https://petstore3.swagger.io/api/v3',
+            baseURL: 'https://api.goshippo.com',
         },
         properties: properties,
     };

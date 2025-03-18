@@ -1,19 +1,19 @@
 {
-  "name": "@devlikeapro/n8n-nodes-petstore",
+  "name": "n8n-nodes-shippo",
   "version": "1.0.0",
-  "description": "n8n node to connect with Petstore",
+  "description": "n8n node to connect with Shippo",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "Devlikapro",
-    "email": "admin@devlike.pro"
+    "name": "Kenneth Gordon",
+    "email": "k@knnygrdn.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/devlikeapro/n8n-nodes-petstore.git"
+    "url": "https://github.com/KTheMan/n8n-nodes-shippo.git"
   },
   "engines": {
     "node": ">=18.10",
@@ -36,7 +36,7 @@
     "n8nNodesApiVersion": 1,
     "credentials": [],
     "nodes": [
-      "dist/nodes/Petstore/Petstore.node.js"
+      "dist/nodes/shippo/shippo.node.js"
     ]
   },
   "devDependencies": {

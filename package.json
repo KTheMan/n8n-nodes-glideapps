@@ -35,9 +35,11 @@
   ],
   "n8n": {
     "n8nNodesApiVersion": 1,
-    "credentials": [],
+    "credentials": [
+      "dist/credentials/ShippoApi.credentials.js"
+    ],
     "nodes": [
-      "dist/nodes/shippo/shippo.node.js"
+      "dist/nodes/Shippo/Shippo.node.js"
     ]
   },
   "devDependencies": {

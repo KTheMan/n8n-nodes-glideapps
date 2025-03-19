@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-shippo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "n8n node to connect with Shippo",
   "keywords": [
     "n8n-community-node-package"
@@ -58,7 +58,6 @@
     "n8n-workflow": "*"
   },
   "dependencies": {
-    "@devlikeapro/n8n-openapi-node": "^0.1.0",
-    "n8n-nodes-shippo": "^1.0.2"
+    "@devlikeapro/n8n-openapi-node": "^0.1.0"
   }
 }

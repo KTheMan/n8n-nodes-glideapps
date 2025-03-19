@@ -20,11 +20,12 @@
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"outDir": "./dist/",
+		"rootDir": "./nodes"
 	},
 	"include": [
 		"credentials/**/*",
 		"nodes/**/*",
 		"nodes/**/*.json",
-		"package.json",
-	],
+		"package.json"
+	]
 }

@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-shippo",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "n8n node to connect with Shippo",
   "keywords": [
     "n8n-community-node-package"
@@ -27,7 +27,8 @@
     "test": "jest",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
-    "lintfix": "eslint nodes credentials package.json --fix"
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist"
@@ -45,16 +46,17 @@
     "eslint": "^8.56.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.1",
     "gulp": "^4.0.2",
+    "jest": "^29.7.0",
     "n8n-workflow": "*",
     "prettier": "^3.3.2",
-    "typescript": "^5.5.3",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5"
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.5.3"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
   },
   "dependencies": {
-    "@devlikeapro/n8n-openapi-node": "^0.1.0"
+    "@devlikeapro/n8n-openapi-node": "^0.1.0",
+    "n8n-nodes-shippo": "^1.0.2"
   }
 }

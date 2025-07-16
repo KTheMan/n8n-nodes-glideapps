@@ -1,5 +1,5 @@
 
-# n8n-nodes-glide
+# n8n-nodes-glideapps
 
 This is an n8n community node for integrating with the Glide Big Tables API. It allows you to automate data operations in Glide using n8n workflows.
 
@@ -9,7 +9,7 @@ Follow these steps to install this node in your n8n instance:
 
 
 ```bash
-npm install n8n-nodes-glide
+npm install n8n-nodes-glideapps
 ```
 
 

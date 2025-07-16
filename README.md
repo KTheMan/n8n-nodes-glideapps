@@ -1,51 +1,55 @@
-# n8n-nodes-shippo
 
-This is an n8n community node for integrating with the Shippo API. It allows you to automate shipping operations using n8n workflows.
+# n8n-nodes-glide
+
+This is an n8n community node for integrating with the Glide Big Tables API. It allows you to automate data operations in Glide using n8n workflows.
 
 ## Installation
 
 Follow these steps to install this node in your n8n instance:
 
+
 ```bash
-npm install n8n-nodes-shippo
+npm install n8n-nodes-glide
 ```
+
 
 ## Credentials
 
-To use this node, you'll need a Shippo API token. You can obtain one by:
+To use this node, you'll need a Glide API key. You can obtain one by:
 
-1. Creating an account at [Shippo](https://goshippo.com)
-2. Navigate to Settings → API
-3. Generate either a Test or Live API token
+1. Creating an account at [Glide](https://www.glideapps.com/)
+2. Navigating to your team settings
+3. Generating an API key for your team
 
 Configure your credentials in n8n:
-- **Environment**: Choose between Test (sandbox) or Live (production)
-- **API Token**: Your Shippo API token (starts with either `shippo_test_` or `shippo_live_`)
+- **API Key**: Your Glide API key
+
 
 ## Features
 
-This node supports various Shippo API operations including:
+This node supports various Glide Big Tables API operations including:
 
-- Address validation
-- Shipping rate calculations
-- Label creation
-- Tracking information
-- Parcel management
-- Customs declarations
+- List, create, and import Big Tables
+- Add, update, and delete rows in Big Tables
+- Replace table schema or data
+- Manage stashes for bulk data operations
+
 
 ## Usage
 
-1. Add the Shippo node to your workflow
-2. Configure your Shippo credentials
-3. Select the desired operation
+1. Add the Glide node to your workflow
+2. Configure your Glide credentials
+3. Select the desired operation (e.g., list tables, add rows)
 4. Configure the operation parameters
 5. Connect to other nodes in your workflow
 
+
 ## Support
 
-- Documentation: [Shippo API Documentation](https://docs.goshippo.com/)
+- Documentation: [Glide Big Tables API Documentation](https://www.glideapps.com/docs/api/big-tables)
 - Issues: Please report any issues in the GitHub repository
-- Maintainer: Your Name/Organization
+- Maintainer: Kenneth Gordon
+
 
 ## License
 

@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-base.glide",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Low-code"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://apidocs.glideapps.com/api-reference/v2/general/authentication"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://apidocs.glideapps.com/api-reference/v2/"
+			}
+		]
+	}
+}

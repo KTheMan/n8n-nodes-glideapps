@@ -1,6 +1,6 @@
-import {Shippo} from "./Shippo.node";
+import {Glide} from "./Glide.node";
 
 test("smoke", () => {
-    const node = new Shippo()
+    const node = new Glide()
     expect(node.description.properties).toBeDefined()
 })

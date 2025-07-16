@@ -1,19 +1,19 @@
 {
-  "name": "n8n-nodes-shippo",
-  "version": "1.0.4",
-  "description": "n8n node to connect with Shippo",
+  "name": "n8n-nodes-glideapps",
+  "version": "1.0.0",
+  "description": "n8n node to connect with Glide Apps",
   "keywords": [
     "n8n-community-node-package"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "knnygrdn.com",
   "author": {
     "name": "Kenneth Gordon",
     "email": "k@knnygrdn.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/KTheMan/n8n-nodes-shippo.git"
+    "url": "https://github.com/KTheMan/n8n-nodes-glideapps.git"
   },
   "engines": {
     "node": ">=18.10",
@@ -36,10 +36,10 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ShippoApi.credentials.js"
+      "dist/credentials/GlideappsApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Shippo/Shippo.node.js"
+      "dist/nodes/Glideapps/Glideapps.node.js"
     ]
   },
   "devDependencies": {

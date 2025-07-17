@@ -1,10 +1,4 @@
-import GlideTablesDefault, { GlideTables as NamedGlideTables } from '@glideapps/tables';
-
-const GlideTables = typeof NamedGlideTables === 'function'
-  ? NamedGlideTables
-  : typeof GlideTablesDefault === 'function'
-    ? GlideTablesDefault
-    : undefined;
+import GlideTables from '@glideapps/tables';
 
 if (typeof GlideTables !== 'function') {
   throw new Error('GlideTables is not a constructor. Please check the @glideapps/tables package version and import style.');

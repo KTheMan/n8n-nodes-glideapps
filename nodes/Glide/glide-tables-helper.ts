@@ -1,16 +1,29 @@
 
-const glideTablesModule = require('@glideapps/tables');
+
+// Allow dependency injection for testability
+let _glideTablesModule: any = null;
+function getGlideTablesModule() {
+  if (_glideTablesModule) return _glideTablesModule;
+  // Default to real module
+  return require('@glideapps/tables');
+}
+
+// For tests
+export function __setGlideTablesModule(mock: any) {
+  _glideTablesModule = mock;
+}
 
 // Helper to create a Glide app client
 // Only token is required for app/team-level operations.
 // For table/row/column operations, appId is also required.
-function getGlideAppClient(token: string, appId?: string) {
-  if (typeof glideTablesModule.app !== 'function') {
+function getGlideAppClient(token: string, appId?: string, glideTablesModule?: any) {
+  const mod = glideTablesModule || getGlideTablesModule();
+  if (typeof mod.app !== 'function') {
     throw new Error('glideTablesModule.app is not a function. Please check the @glideapps/tables package version and documentation.');
   }
   const config: any = { token };
   if (appId) config.appId = appId;
-  return glideTablesModule.app(config);
+  return mod.app(config);
 }
 
 // For compatibility with other files
@@ -88,12 +101,13 @@ export async function getColumns(client: any, tableName: string) {
  * Fetch list of apps (teams) for the authenticated user from the Glide npm package (for dropdowns).
  * Only requires the user's token (top-level in the hierarchy).
  */
-export async function getApps(token: string): Promise<DropdownOption[]> {
+export async function getApps(token: string, glideTablesModule?: any): Promise<DropdownOption[]> {
   try {
-    if (typeof glideTablesModule.getApps !== 'function') {
+    const mod = glideTablesModule || getGlideTablesModule();
+    if (typeof mod.getApps !== 'function') {
       throw new Error('glideTablesModule.getApps is not a function. Please check the @glideapps/tables package version and documentation.');
     }
-    const apps = await glideTablesModule.getApps({ token });
+    const apps = await mod.getApps({ token });
     return Array.isArray(apps)
       ? apps.map((app: any) => ({ name: app.name || app.id, value: app.id }))
       : [];
@@ -106,10 +120,13 @@ export async function getApps(token: string): Promise<DropdownOption[]> {
  * Fetch list of tables for a given app (for dropdowns).
  * Requires both token and appId (second level in the hierarchy).
  */
-export async function getTables(token: string, appId: string): Promise<DropdownOption[]> {
+export async function getTables(token: string, appId: string, glideTablesModule?: any): Promise<DropdownOption[]> {
   try {
-    const client = getGlideAppClient(token, appId);
+    const client = getGlideAppClient(token, appId, glideTablesModule);
     const tables = await client.getTables();
+    if (!Array.isArray(tables)) {
+      return [{ name: 'No Tables Found or Invalid App ID.', value: '' }];
+    }
     return tables.map((table: any) => ({
       name: table.name || table.id,
       value: table.id,

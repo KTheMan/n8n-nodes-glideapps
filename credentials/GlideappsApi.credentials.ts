@@ -11,8 +11,8 @@ export class GlideappsApi implements ICredentialType {
     documentationUrl = 'https://www.glideapps.com/docs/api';
     properties: INodeProperties[] = [
         {
-            displayName: 'API Key',
-            name: 'apiKey',
+            displayName: 'API Token',
+            name: 'token',
             type: 'string',
             typeOptions: { password: true },
             required: true,
@@ -25,7 +25,7 @@ export class GlideappsApi implements ICredentialType {
         type: 'generic',
         properties: {
             headers: {
-                'Authorization': 'Bearer {{$credentials.apiKey}}'
+                Authorization: '=Bearer {{$credentials.token}}'
             },
         },
     };
@@ -35,7 +35,7 @@ export class GlideappsApi implements ICredentialType {
             url: 'https://api.glideapps.com/apps',
             method: 'GET',
             headers: {
-                'Authorization': 'Bearer {{$credentials.apiKey}}'
+                Authorization: '=Bearer {{$credentials.token}}'
             },
         },
     };

@@ -35,7 +35,8 @@ async function safeDropdown<T>(fn: () => Promise<T[]>): Promise<T[]> {
     }
 }
 
-// --- n8n GUI Properties for npm API ---
+
+// --- n8n GUI Properties for npm API (CRUD, resource/operation split) ---
 const npmApiProperties = [
     {
         displayName: 'Usage Tips',
@@ -55,6 +56,46 @@ const npmApiProperties = [
         </ul>`,
     },
     {
+        displayName: 'Resource',
+        name: 'resource',
+        type: 'options',
+        noDataExpression: true,
+        options: [
+            { name: 'Table', value: 'table' },
+            { name: 'Row', value: 'row' },
+        ],
+        default: 'table',
+        required: true,
+        displayOptions: {
+            show: {
+                apiType: ['npm'],
+            },
+        },
+    },
+    {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        options: [
+            // Table operations
+            { name: 'Get Many', value: 'getAll', action: 'List many tables', resource: 'table' },
+            { name: 'Create Table', value: 'create', action: 'Create a new table', resource: 'table' },
+            { name: 'Delete Table', value: 'delete', action: 'Delete a table', resource: 'table' },
+            // Row operations
+            { name: 'Get Row', value: 'get', action: 'Get a single row', resource: 'row' },
+            { name: 'Update Row', value: 'update', action: 'Update a row', resource: 'row' },
+        ],
+        default: 'getAll',
+        required: true,
+        displayOptions: {
+            show: {
+                apiType: ['npm'],
+            },
+        },
+    },
+    // --- Table fields ---
+    {
         displayName: 'App ID',
         name: 'appId',
         type: 'string',
@@ -63,6 +104,7 @@ const npmApiProperties = [
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['table', 'row'],
             },
         },
         description: 'The App ID for your Glide app',
@@ -79,26 +121,48 @@ const npmApiProperties = [
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row', 'table'],
+                operation: ['getAll', 'get', 'create', 'update', 'delete'],
             },
         },
         description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
     },
+    // --- Row fields ---
     {
         displayName: 'Row Name or ID',
         name: 'rowId',
         type: 'options',
-        description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
         typeOptions: {
             loadOptionsMethod: 'getRowsDropdown',
             loadOptionsDependsOn: ['tableName', 'rowSearch', 'rowLimit'],
         },
         default: '',
+        required: true,
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row'],
+                operation: ['get', 'update', 'delete'],
             },
         },
+        description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
     },
+    {
+        displayName: 'Row Data',
+        name: 'rowData',
+        type: 'json',
+        default: '{}',
+        required: true,
+        displayOptions: {
+            show: {
+                apiType: ['npm'],
+                resource: ['row'],
+                operation: ['create', 'update'],
+            },
+        },
+        description: 'Row data as JSON object',
+    },
+    // --- Advanced/optional fields ---
     {
         displayName: 'Row Search',
         name: 'rowSearch',
@@ -107,6 +171,8 @@ const npmApiProperties = [
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row'],
+                operation: ['getAll'],
             },
         },
         description: 'Filter rows by text (applies to all columns)',
@@ -123,6 +189,8 @@ const npmApiProperties = [
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row'],
+                operation: ['getAll'],
             },
         },
         description: 'Maximum number of rows to fetch for dropdowns',
@@ -135,6 +203,8 @@ const npmApiProperties = [
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row'],
+                operation: ['getAll'],
             },
         },
         description: 'Whether to enable fetching rows for preview or selection if the table is large',
@@ -151,6 +221,8 @@ const npmApiProperties = [
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row'],
+                operation: ['get', 'update'],
             },
         },
         description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
@@ -159,18 +231,19 @@ const npmApiProperties = [
         displayName: 'Column Type Filter',
         name: 'columnTypeFilter',
         type: 'multiOptions',
-        // eslint-disable-next-line n8n-nodes-base/node-param-multi-options-type-unsorted-items
         options: [
-            { name: 'Text', value: 'text' },
-            { name: 'Number', value: 'number' },
             { name: 'Boolean', value: 'boolean' },
             { name: 'Date', value: 'date' },
+            { name: 'Number', value: 'number' },
             { name: 'Other', value: 'other' },
+            { name: 'Text', value: 'text' },
         ],
         default: [],
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row'],
+                operation: ['get', 'update'],
             },
         },
         description: 'Filter columns by type for the dropdown',
@@ -187,6 +260,8 @@ const npmApiProperties = [
         displayOptions: {
             show: {
                 apiType: ['npm'],
+                resource: ['row'],
+                operation: ['getAll'],
             },
         },
         description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',

@@ -1,0 +1,30 @@
+name: Sync Version from Tag
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+      - name: Set version in package.json and package-lock.json
+        run: |
+          if [ -z "$TAG_VERSION" ]; then
+            echo "No tag version found. Skipping version sync."
+            exit 1
+          fi
+          npm version --no-git-tag-version "$TAG_VERSION"
+      - name: Commit version bump
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: sync version to ${{ env.TAG_VERSION }} from tag"
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
+          push_options: --force

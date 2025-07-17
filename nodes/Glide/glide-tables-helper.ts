@@ -16,21 +16,7 @@ function getGlideAppClient(token: string, appId?: string) {
 // For compatibility with other files
 export const getGlideTablesClient = getGlideAppClient;
 
-/**
- * Fetch list of apps (teams) for the authenticated user from the Glide npm package.
- * Returns an array of { name, value } for n8n dropdowns.
- */
-export async function getAppsNpm(client: any): Promise<DropdownOption[]> {
-  try {
-    const apps = await client.getApps();
-    return apps.map((app: any) => ({
-      name: app.name || app.id,
-      value: app.id,
-    }));
-  } catch (err: any) {
-    return [{ name: `Error: ${err?.message || err}`, value: '' }];
-  }
-}
+
 
 // =========================
 // Types
@@ -104,8 +90,13 @@ export async function getColumns(client: any, tableName: string) {
  */
 export async function getApps(token: string): Promise<DropdownOption[]> {
   try {
-    const client = getGlideAppClient(token);
-    return getAppsNpm(client);
+    if (typeof glideTablesModule.getApps !== 'function') {
+      throw new Error('glideTablesModule.getApps is not a function. Please check the @glideapps/tables package version and documentation.');
+    }
+    const apps = await glideTablesModule.getApps({ token });
+    return Array.isArray(apps)
+      ? apps.map((app: any) => ({ name: app.name || app.id, value: app.id }))
+      : [];
   } catch (err: any) {
     return [{ name: `Error: ${err?.message || err}`, value: '' }];
   }

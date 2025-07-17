@@ -39,7 +39,7 @@
       "dist/credentials/GlideappsApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Glideapps/Glideapps.node.js"
+      "dist/nodes/Glide/Glide.node.js"
     ]
   },
   "devDependencies": {

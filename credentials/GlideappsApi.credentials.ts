@@ -8,22 +8,16 @@ import {
 export class GlideappsApi implements ICredentialType {
     name = 'glideappsApi';
     displayName = 'Glide Apps API';
-    documentationUrl = 'https://apidocs.glideapps.com/api-reference/v2/general/authentication';
+    documentationUrl = 'https://www.glideapps.com/docs/api';
     properties: INodeProperties[] = [
         {
-            displayName: 'Environment',
-            name: 'environment',
-            type: 'options',
-            default: 'test',
-        },
-        {
-            displayName: 'API Token',
-            name: 'apiToken',
+            displayName: 'API Key',
+            name: 'apiKey',
             type: 'string',
             typeOptions: { password: true },
             required: true,
             default: '',
-            description: 'Your Glide Apps API Token',
+            description: 'Your Glide Apps API Key. Get it from your Glide team settings.',
         },
     ];
 
@@ -31,7 +25,7 @@ export class GlideappsApi implements ICredentialType {
         type: 'generic',
         properties: {
             headers: {
-                'Authorization': 'Bearer {{$credentials.apiToken}}'
+                'Authorization': 'Bearer {{$credentials.apiKey}}'
             },
         },
     };

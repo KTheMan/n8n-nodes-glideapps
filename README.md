@@ -42,7 +42,7 @@ This package includes a helper module for the official `@glideapps/tables` packa
 #### GUI Operations (for n8n dropdowns and user-facing actions)
 
 - **getApps(apiKey)**: Returns a list of available apps/teams (placeholder, implement as needed for your Glide setup).
-- **getTables(client)**: Returns a list of tables for a given app (placeholder, implement as needed for your Glide setup).
+- **getTables(token, appId)**: Returns a list of tables for a given app (token and appId required).
 - **getColumns(client, tableName)**: Returns a list of columns for a table (for dropdowns).
 - **getRows(client, tableName, limit)**: Returns a preview of rows for dropdowns (with limit).
 - **getRowPreview(client, tableName, limit)**: Returns a preview of rows for dropdowns (with limit).
@@ -102,7 +102,7 @@ Below is a full example of using the node execution helpers in your own scripts:
 
 ```ts
 // Example usage of node execution helpers:
-const client = getGlideTablesClient('YOUR_API_KEY', 'YOUR_APP_ID');
+const client = getGlideTablesClient('YOUR_API_KEY', 'YOUR_APP_ID'); // For row/column operations
 
 // Add a row
 await addRowToTable(client, { tableName: 'MyTable', columnValues: { Name: 'Test' } });
@@ -129,7 +129,7 @@ await queryTableSql(client, { appID: 'YOUR_APP_ID', sql: 'SELECT * FROM "MyTable
 const errors = extractMutationErrors(results);
 
 // Dynamic dropdowns for n8n
-const tables: DropdownOption[] = await getTables(client);
+const tables: DropdownOption[] = await getTables('YOUR_API_KEY', 'YOUR_APP_ID');
 const columns: DropdownOption[] = await getColumns(client, 'MyTable');
 const rows: DropdownOption[] = await getRows(client, 'MyTable', 50);
 

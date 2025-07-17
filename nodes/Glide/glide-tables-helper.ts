@@ -1,8 +1,20 @@
-import GlideTables from '@glideapps/tables';
 
-if (typeof GlideTables !== 'function') {
-  throw new Error('GlideTables is not a constructor. Please check the @glideapps/tables package version and import style.');
+const glideTablesModule = require('@glideapps/tables');
+
+// Helper to create a Glide app client
+// Only token is required for app/team-level operations.
+// For table/row/column operations, appId is also required.
+function getGlideAppClient(token: string, appId?: string) {
+  if (typeof glideTablesModule.app !== 'function') {
+    throw new Error('glideTablesModule.app is not a function. Please check the @glideapps/tables package version and documentation.');
+  }
+  const config: any = { token };
+  if (appId) config.appId = appId;
+  return glideTablesModule.app(config);
 }
+
+// For compatibility with other files
+export const getGlideTablesClient = getGlideAppClient;
 
 /**
  * Fetch list of apps (teams) for the authenticated user from the Glide npm package.
@@ -88,11 +100,11 @@ export async function getColumns(client: any, tableName: string) {
 
 /**
  * Fetch list of apps (teams) for the authenticated user from the Glide npm package (for dropdowns).
- * This replaces the old v1 endpoint usage.
+ * Only requires the user's token (top-level in the hierarchy).
  */
 export async function getApps(token: string): Promise<DropdownOption[]> {
   try {
-    const client = new (GlideTables as any)({ token });
+    const client = getGlideAppClient(token);
     return getAppsNpm(client);
   } catch (err: any) {
     return [{ name: `Error: ${err?.message || err}`, value: '' }];
@@ -101,10 +113,11 @@ export async function getApps(token: string): Promise<DropdownOption[]> {
 
 /**
  * Fetch list of tables for a given app (for dropdowns).
- * Placeholder: implement as needed for your Glide setup.
+ * Requires both token and appId (second level in the hierarchy).
  */
-export async function getTables(client: any) {
+export async function getTables(token: string, appId: string): Promise<DropdownOption[]> {
   try {
+    const client = getGlideAppClient(token, appId);
     const tables = await client.getTables();
     return tables.map((table: any) => ({
       name: table.name || table.id,
@@ -260,12 +273,3 @@ export function extractMutationErrors(results: any[]): string[] {
     .map((r) => typeof r.error === 'string' ? r.error : JSON.stringify(r.error));
 }
 
-export function getGlideTablesClient(token: string, appId: string) {
-  if (!GlideTables) {
-    throw new Error('GlideTables class not found in @glideapps/tables. Please check the package version and import.');
-  }
-  return new (GlideTables as any)({
-    token,
-    appId,
-  });
-}

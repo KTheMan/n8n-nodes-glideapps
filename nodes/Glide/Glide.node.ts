@@ -323,28 +323,28 @@ export class Glide implements INodeType {
             // App dropdown for npm API
             async getAppsDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
                 const creds = await this.getCredentials('glideappsApi');
-                const apiKey = creds.apiKey as string;
-                return safeDropdown(() => glideHelpers.getApps(apiKey));
+                const token = creds.token as string;
+                return safeDropdown(() => glideHelpers.getApps(token));
             },
             // Dynamic tables dropdown for npm API
             async getTablesDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
                 const creds = await this.getCredentials('glideappsApi');
-                const apiKey = creds.apiKey as string;
+                const token = creds.token as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 return safeDropdown(async () => {
-                    const client = glideHelpers.getGlideTablesClient(apiKey, appId);
-                    const tables = await glideHelpers.getTables(client);
+                    const tables = await glideHelpers.getTables(token, appId);
                     return Array.isArray(tables) ? tables : [];
                 });
             },
             async getRowsDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
                 const creds = await this.getCredentials('glideappsApi');
-                const apiKey = creds.apiKey as string;
+                const token = creds.token as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 const tableName = this.getNodeParameter('tableName', 0) as string;
                 const search = (this.getNodeParameter('rowSearch', 0) as string) || '';
                 const limit = Number(this.getNodeParameter('rowLimit', 0));
-                const client = glideHelpers.getGlideTablesClient(apiKey, appId);
+                // getRows still expects a client, so we use the helper
+                const client = glideHelpers.getGlideTablesClient(token, appId);
                 return safeDropdown(async () => {
                     let rows = await glideHelpers.getRows(client, tableName, limit);
                     if (search) {
@@ -355,11 +355,11 @@ export class Glide implements INodeType {
             },
             async getColumnsDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
                 const creds = await this.getCredentials('glideappsApi');
-                const apiKey = creds.apiKey as string;
+                const token = creds.token as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 const tableName = this.getNodeParameter('tableName', 0) as string;
                 const typeFilter = (this.getNodeParameter('columnTypeFilter', 0) as string[]) || [];
-                const client = glideHelpers.getGlideTablesClient(apiKey, appId);
+                const client = glideHelpers.getGlideTablesClient(token, appId);
                 return safeDropdown(async () => {
                     let columns = await glideHelpers.getColumns(client, tableName);
                     if (typeFilter.length) {
@@ -371,7 +371,7 @@ export class Glide implements INodeType {
             },
             async getRowsWithConfirmationDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
                 const creds = await this.getCredentials('glideappsApi');
-                const apiKey = creds.apiKey as string;
+                const token = creds.token as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 const tableName = this.getNodeParameter('tableName', 0) as string;
                 const confirmed = !!this.getNodeParameter('confirmRowFetch', 0);
@@ -379,7 +379,7 @@ export class Glide implements INodeType {
                 if (!confirmed) {
                     return [{ name: '⚠️ Please Enable Confirmation to Fetch Rows.', value: '' }];
                 }
-                const client = glideHelpers.getGlideTablesClient(apiKey, appId);
+                const client = glideHelpers.getGlideTablesClient(token, appId);
                 return safeDropdown(() => glideHelpers.getRowsWithConfirmation(client, tableName, limit, confirmed));
             },
         },

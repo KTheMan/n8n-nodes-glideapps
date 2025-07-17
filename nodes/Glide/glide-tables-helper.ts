@@ -18,12 +18,10 @@ export function __setGlideTablesModule(mock: any) {
 // For table/row/column operations, appId is also required.
 function getGlideAppClient(token: string, appId?: string, glideTablesModule?: any) {
   const mod = glideTablesModule || getGlideTablesModule();
-  if (typeof mod.app !== 'function') {
-    throw new Error('glideTablesModule.app is not a function. Please check the @glideapps/tables package version and documentation.');
-  }
-  const config: any = { token };
-  if (appId) config.appId = appId;
-  return mod.app(config);
+  if (!appId) throw new Error('appId is required');
+  // Set token via environment variable for the module
+  process.env.GLIDE_TOKEN = token;
+  return mod.app(appId);
 }
 
 // For compatibility with other files
@@ -83,18 +81,30 @@ export async function getRowPreview(client: any, tableName: string, limit = 20):
  * Returns an array of { name, value } for the dropdown.
  */
 export async function getRows(client: any, tableName: string, limit = 100): Promise<DropdownOption[]> {
-  return getRowPreview(client, tableName, limit);
+  // Uses the real Glide Table API: table.get() returns array of row objects
+  if (!client || typeof client.getTables !== 'function') throw new Error('Invalid Glide client');
+  const tables = await client.getTables();
+  const table = tables.find((t: any) => t.props && (t.props.table === tableName || t.props.name === tableName));
+  if (!table) throw new Error('Table not found');
+  if (typeof table.get !== 'function') throw new Error('Table does not support get');
+  const rows = await table.get();
+  if (!Array.isArray(rows)) throw new Error('Invalid rows structure');
+  return rows.slice(0, limit).map((row: any, idx: number) => ({ name: row.$rowID || `Row ${idx+1}`, value: row.$rowID || '' }));
 }
 
 /**
  * Fetch list of columns for a given table (for dropdowns).
  */
 export async function getColumns(client: any, tableName: string) {
-  const result = await queryTable(client, { appID: '', tableName, startAt: undefined });
-  if (result && result[0] && result[0].rows && result[0].rows[0]) {
-    return Object.keys(result[0].rows[0]).map(col => ({ name: col, value: col }));
-  }
-  return [];
+  // Uses the real Glide Table API: table.getSchema().data.columns
+  if (!client || typeof client.getTables !== 'function') throw new Error('Invalid Glide client');
+  const tables = await client.getTables();
+  const table = tables.find((t: any) => t.props && (t.props.table === tableName || t.props.name === tableName));
+  if (!table) throw new Error('Table not found');
+  if (typeof table.getSchema !== 'function') throw new Error('Table does not support getSchema');
+  const schema = await table.getSchema();
+  if (!schema || !schema.data || !Array.isArray(schema.data.columns)) throw new Error('Invalid schema structure');
+  return schema.data.columns.map((col: any) => ({ name: col.name, value: col.name }));
 }
 
 /**
@@ -127,10 +137,14 @@ export async function getTables(token: string, appId: string, glideTablesModule?
     if (!Array.isArray(tables)) {
       return [{ name: 'No Tables Found or Invalid App ID.', value: '' }];
     }
-    return tables.map((table: any) => ({
-      name: table.name || table.id,
-      value: table.id,
-    }));
+    return tables.map((table: any) => {
+      // Official Table object: table.props.name (table name), table.props.table (table id)
+      if (table && table.props && table.props.name && table.props.table) {
+        return { name: table.props.name, value: table.props.table };
+      }
+      // fallback for unexpected structure
+      return { name: table.name || table.id || 'Unknown', value: table.id || '' };
+    });
   } catch (err: any) {
     return [{ name: `Error: ${err?.message || err}`, value: '' }];
   }

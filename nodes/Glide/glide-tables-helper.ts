@@ -1,7 +1,10 @@
-const glideTablesModule = require('@glideapps/tables');
-const GlideTables = typeof glideTablesModule === 'function'
-  ? glideTablesModule
-  : glideTablesModule.GlideTables || glideTablesModule.default;
+import GlideTablesDefault, { GlideTables as NamedGlideTables } from '@glideapps/tables';
+
+const GlideTables = typeof NamedGlideTables === 'function'
+  ? NamedGlideTables
+  : typeof GlideTablesDefault === 'function'
+    ? GlideTablesDefault
+    : undefined;
 
 if (typeof GlideTables !== 'function') {
   throw new Error('GlideTables is not a constructor. Please check the @glideapps/tables package version and import style.');

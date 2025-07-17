@@ -58,6 +58,7 @@
     "n8n-workflow": "*"
   },
   "dependencies": {
-    "@devlikeapro/n8n-openapi-node": "^0.1.0"
+    "@devlikeapro/n8n-openapi-node": "^0.1.0",
+    "@glideapps/tables": "^1.0.21"
   }
 }

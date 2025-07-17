@@ -34,6 +34,9 @@ export class GlideappsApi implements ICredentialType {
         request: {
             url: 'https://api.glideapps.com/apps',
             method: 'GET',
+            headers: {
+                'Authorization': 'Bearer {{$credentials.apiKey}}'
+            },
         },
     };
 }

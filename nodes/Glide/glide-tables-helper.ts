@@ -1,6 +1,11 @@
-// Use CommonJS require for compatibility
 const glideTablesModule = require('@glideapps/tables');
-const GlideTables = glideTablesModule.GlideTables || glideTablesModule.default;
+const GlideTables = typeof glideTablesModule === 'function'
+  ? glideTablesModule
+  : glideTablesModule.GlideTables || glideTablesModule.default;
+
+if (typeof GlideTables !== 'function') {
+  throw new Error('GlideTables is not a constructor. Please check the @glideapps/tables package version and import style.');
+}
 
 /**
  * Fetch list of apps (teams) for the authenticated user from the Glide npm package.

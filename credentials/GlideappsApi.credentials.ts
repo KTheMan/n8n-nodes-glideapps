@@ -32,7 +32,8 @@ export class GlideappsApi implements ICredentialType {
 
     test: ICredentialTestRequest = {
         request: {
-            url: 'https://api.glideapps.com/apps',
+            baseURL: 'https://api.glideapps.com',
+            url: '/apps',
             method: 'GET',
         },
     };

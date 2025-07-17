@@ -296,7 +296,7 @@ export class Glide implements INodeType {
         outputs: ['main'],
         credentials: [
             {
-                name: 'glideApi',
+                name: 'glideappsApi',
                 required: true,
             },
         ],

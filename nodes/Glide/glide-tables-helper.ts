@@ -77,19 +77,22 @@ import axios from 'axios';
  */
 export async function getApps(apiKey: string): Promise<DropdownOption[]> {
   try {
-    const response = await axios.get('https://api.glideapps.com/v1/apps', {
+    const response = await axios.get('https://api.glideapps.com/apps', {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         Accept: 'application/json',
       },
     });
-    if (Array.isArray(response.data?.data)) {
-      return response.data.data.map((app: any) => ({
-        name: app.name || app.id,
-        value: app.id,
-      }));
-    }
-    return [];
+    // The response shape may be { data: [...] } or just [...], handle both
+    const apps = Array.isArray(response.data)
+      ? response.data
+      : Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
+    return apps.map((app: any) => ({
+      name: app.name || app.id,
+      value: app.id,
+    }));
   } catch (err: any) {
     return [{ name: `Error: ${err?.message || err}`, value: '' }];
   }

@@ -8,6 +8,72 @@ function getGlideTablesModule() {
   return require('@glideapps/tables');
 }
 
+// =========================
+// Manual/Debug Inspection Helpers
+// =========================
+
+/**
+ * Print all apps, tables, columns, and rows for a given API key (for CLI/manual debug)
+ */
+export async function printGlideApiStructure(apiKey: string, appId?: string) {
+  const apps = await getApps(apiKey);
+  console.log('APPS:', apps);
+  let useAppId = appId || (apps && apps[0] && apps[0].value);
+  if (!useAppId) {
+    console.warn('No appId found.');
+    return;
+  }
+  const client = getGlideTablesClient(apiKey, String(useAppId));
+  let tables;
+  try {
+    tables = await client.getTables();
+    console.log('RAW TABLES:', tables);
+  } catch (e) {
+    console.log('Error fetching tables:', e);
+    tables = [];
+  }
+  if (Array.isArray(tables) && tables[0] && tables[0].props && tables[0].props.table) {
+    const table = tables[0];
+    const tableId = table.props.table;
+    const tableName = table.props.name;
+    console.log('Using table:', tableName, tableId);
+    if (typeof table.getSchema === 'function') {
+      const schema = await table.getSchema();
+      console.log('RAW SCHEMA:', schema);
+      if (schema && schema.data && Array.isArray(schema.data.columns)) {
+        console.log('COLUMNS:', schema.data.columns.map((col: { name: string }) => col.name));
+      } else {
+        console.log('No columns property in schema');
+      }
+    } else {
+      console.log('No getSchema function on table');
+    }
+    if (typeof table.get === 'function') {
+      const rows = await table.get();
+      console.log('RAW ROWS:', rows);
+    } else {
+      console.log('No get function on table');
+    }
+  } else {
+    console.warn('No tables found or invalid structure.');
+  }
+}
+
+// CLI entry point for manual inspection (must be at the end of the file)
+if (require.main === module) {
+  const apiKey = process.env.GLIDE_API_KEY || process.argv[2];
+  const appId = process.argv[3];
+  if (!apiKey) {
+    console.error('Usage: npx ts-node glide-tables-helper.ts <apiKey> [appId]');
+    process.exit(1);
+  }
+  printGlideApiStructure(apiKey, appId).catch(e => {
+    console.error('Error in printGlideApiStructure:', e);
+    process.exit(1);
+  });
+}
+
+
 // For tests
 export function __setGlideTablesModule(mock: any) {
   _glideTablesModule = mock;
@@ -294,4 +360,3 @@ export function extractMutationErrors(results: any[]): string[] {
     .filter((r) => r && r.error)
     .map((r) => typeof r.error === 'string' ? r.error : JSON.stringify(r.error));
 }
-

@@ -8,7 +8,7 @@ if (typeof GlideTables !== 'function') {
  * Fetch list of apps (teams) for the authenticated user from the Glide npm package.
  * Returns an array of { name, value } for n8n dropdowns.
  */
-export async function getAppsNpm(client: InstanceType<typeof GlideTables>): Promise<DropdownOption[]> {
+export async function getAppsNpm(client: any): Promise<DropdownOption[]> {
   try {
     const apps = await client.getApps();
     return apps.map((app: any) => ({
@@ -48,7 +48,7 @@ export function getRowFetchWarning(limit: number) {
  * Helper to fetch rows with explicit user confirmation (for n8n UX).
  * Only fetches if user has acknowledged the warning.
  */
-export async function getRowsWithConfirmation(client: InstanceType<typeof GlideTables>, tableName: string, limit: number, confirmed: boolean): Promise<DropdownOption[]> {
+export async function getRowsWithConfirmation(client: any, tableName: string, limit: number, confirmed: boolean): Promise<DropdownOption[]> {
   if (!confirmed) {
     throw new Error('User confirmation required before fetching rows.');
   }
@@ -59,7 +59,7 @@ export async function getRowsWithConfirmation(client: InstanceType<typeof GlideT
  * Fetch a preview of rows (with a hard limit) for use in n8n dropdowns.
  * Returns an array of { name, value } for the dropdown.
  */
-export async function getRowPreview(client: InstanceType<typeof GlideTables>, tableName: string, limit = 20): Promise<DropdownOption[]> {
+export async function getRowPreview(client: any, tableName: string, limit = 20): Promise<DropdownOption[]> {
   const rows = await getRowsInternal(client, tableName, limit);
   return rows.map((row: any, idx: number) => ({
     name: row.id ? `Row: ${row.id}` : `Row ${idx+1}`,
@@ -71,14 +71,14 @@ export async function getRowPreview(client: InstanceType<typeof GlideTables>, ta
  * Fetch rows for a given table (for dropdowns, with limit).
  * Returns an array of { name, value } for the dropdown.
  */
-export async function getRows(client: InstanceType<typeof GlideTables>, tableName: string, limit = 100): Promise<DropdownOption[]> {
+export async function getRows(client: any, tableName: string, limit = 100): Promise<DropdownOption[]> {
   return getRowPreview(client, tableName, limit);
 }
 
 /**
  * Fetch list of columns for a given table (for dropdowns).
  */
-export async function getColumns(client: InstanceType<typeof GlideTables>, tableName: string) {
+export async function getColumns(client: any, tableName: string) {
   const result = await queryTable(client, { appID: '', tableName, startAt: undefined });
   if (result && result[0] && result[0].rows && result[0].rows[0]) {
     return Object.keys(result[0].rows[0]).map(col => ({ name: col, value: col }));
@@ -90,9 +90,9 @@ export async function getColumns(client: InstanceType<typeof GlideTables>, table
  * Fetch list of apps (teams) for the authenticated user from the Glide npm package (for dropdowns).
  * This replaces the old v1 endpoint usage.
  */
-export async function getApps(apiKey: string): Promise<DropdownOption[]> {
+export async function getApps(token: string): Promise<DropdownOption[]> {
   try {
-    const client = new GlideTables({ apiKey });
+    const client = new (GlideTables as any)({ token });
     return getAppsNpm(client);
   } catch (err: any) {
     return [{ name: `Error: ${err?.message || err}`, value: '' }];
@@ -103,7 +103,7 @@ export async function getApps(apiKey: string): Promise<DropdownOption[]> {
  * Fetch list of tables for a given app (for dropdowns).
  * Placeholder: implement as needed for your Glide setup.
  */
-export async function getTables(client: InstanceType<typeof GlideTables>) {
+export async function getTables(client: any) {
   try {
     const tables = await client.getTables();
     return tables.map((table: any) => ({
@@ -118,7 +118,7 @@ export async function getTables(client: InstanceType<typeof GlideTables>) {
 /**
  * Fetch a single row by ID for safe previewing (avoids large data loads).
  */
-export async function getRowById(client: InstanceType<typeof GlideTables>, tableName: string, rowId: string): Promise<any | null> {
+export async function getRowById(client: any, tableName: string, rowId: string): Promise<any | null> {
   const rows = await getRowsInternal(client, tableName, 1000);
   return rows.find((row: any) => row.id === rowId) || null;
 }
@@ -127,7 +127,7 @@ export async function getRowById(client: InstanceType<typeof GlideTables>, table
 // Mutation & Query Helpers (for node operations)
 // =========================
 
-export async function addRowToTable(client: InstanceType<typeof GlideTables>, params: AddRowParams) {
+export async function addRowToTable(client: any, params: AddRowParams) {
   try {
     return await client.mutateTables({
       mutations: [
@@ -143,7 +143,7 @@ export async function addRowToTable(client: InstanceType<typeof GlideTables>, pa
   }
 }
 
-export async function setColumnsInRow(client: InstanceType<typeof GlideTables>, params: SetColumnsParams) {
+export async function setColumnsInRow(client: any, params: SetColumnsParams) {
   const rowIdentifier = params.rowID ? { rowID: params.rowID } : params.rowIndex !== undefined ? { rowIndex: params.rowIndex } : {};
   try {
     return await client.mutateTables({
@@ -161,7 +161,7 @@ export async function setColumnsInRow(client: InstanceType<typeof GlideTables>, 
   }
 }
 
-export async function deleteRow(client: InstanceType<typeof GlideTables>, params: DeleteRowParams) {
+export async function deleteRow(client: any, params: DeleteRowParams) {
   const rowIdentifier = params.rowID ? { rowID: params.rowID } : params.rowIndex !== undefined ? { rowIndex: params.rowIndex } : {};
   try {
     return await client.mutateTables({
@@ -178,7 +178,7 @@ export async function deleteRow(client: InstanceType<typeof GlideTables>, params
   }
 }
 
-export async function batchMutateTables(client: InstanceType<typeof GlideTables>, mutations: Mutation[]) {
+export async function batchMutateTables(client: any, mutations: Mutation[]) {
   try {
     return await client.mutateTables({ mutations });
   } catch (err) {
@@ -186,7 +186,7 @@ export async function batchMutateTables(client: InstanceType<typeof GlideTables>
   }
 }
 
-export async function runMutations(client: InstanceType<typeof GlideTables>, mutations: Mutation[]): Promise<any> {
+export async function runMutations(client: any, mutations: Mutation[]): Promise<any> {
   try {
     return await client.mutateTables({ mutations });
   } catch (err) {
@@ -194,7 +194,7 @@ export async function runMutations(client: InstanceType<typeof GlideTables>, mut
   }
 }
 
-export async function queryTableSql(client: InstanceType<typeof GlideTables>, params: SqlQueryParams) {
+export async function queryTableSql(client: any, params: SqlQueryParams) {
   try {
     return await client.queryTables({
       queries: [
@@ -209,7 +209,7 @@ export async function queryTableSql(client: InstanceType<typeof GlideTables>, pa
   }
 }
 
-export async function queryTable(client: InstanceType<typeof GlideTables>, params: QueryTableParams) {
+export async function queryTable(client: any, params: QueryTableParams) {
   try {
     return await client.queryTables({
       queries: [
@@ -225,7 +225,7 @@ export async function queryTable(client: InstanceType<typeof GlideTables>, param
 }
 
 export async function getAllRowsPaginated(
-  client: InstanceType<typeof GlideTables>,
+  client: any,
   tableName: string,
   pageSize = 100,
   maxPages = 10
@@ -249,7 +249,7 @@ export async function getAllRowsPaginated(
 // Internal Utilities
 // =========================
 
-function getRowsInternal(client: InstanceType<typeof GlideTables>, tableName: string, limit = 100): Promise<any[]> {
+function getRowsInternal(client: any, tableName: string, limit = 100): Promise<any[]> {
   return queryTable(client, { appID: '', tableName, startAt: undefined })
     .then(result => (result && result[0] && result[0].rows) ? result[0].rows.slice(0, limit) : []);
 }
@@ -260,12 +260,12 @@ export function extractMutationErrors(results: any[]): string[] {
     .map((r) => typeof r.error === 'string' ? r.error : JSON.stringify(r.error));
 }
 
-export function getGlideTablesClient(apiKey: string, appId: string) {
+export function getGlideTablesClient(token: string, appId: string) {
   if (!GlideTables) {
     throw new Error('GlideTables class not found in @glideapps/tables. Please check the package version and import.');
   }
-  return new GlideTables({
-    apiKey,
+  return new (GlideTables as any)({
+    token,
     appId,
   });
 }

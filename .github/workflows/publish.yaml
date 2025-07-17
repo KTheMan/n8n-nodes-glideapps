@@ -15,6 +15,18 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+      - name: Set version in package.json and package-lock.json
+        run: |
+          if [ -z "$TAG_VERSION" ]; then
+            echo "No tag version found. Skipping version sync."
+            exit 1
+          fi
+          npm version --no-git-tag-version "$TAG_VERSION"
       - run: npm run test
 #      - run: npm run lint
       - run: npm run build

@@ -69,11 +69,30 @@ export async function getColumns(client: InstanceType<typeof GlideTables>, table
  * Fetch list of apps (teams) (for dropdowns).
  * Placeholder: implement as needed for your Glide setup.
  */
-export async function getApps(apiKey: string) {
-  return [
-    { name: 'Default Team', value: 'default-team-id' },
-    // ...
-  ];
+import axios from 'axios';
+
+/**
+ * Fetch list of apps (teams) for the authenticated user from the Glide API.
+ * Returns an array of { name, value } for n8n dropdowns.
+ */
+export async function getApps(apiKey: string): Promise<DropdownOption[]> {
+  try {
+    const response = await axios.get('https://api.glideapps.com/v1/apps', {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: 'application/json',
+      },
+    });
+    if (Array.isArray(response.data?.data)) {
+      return response.data.data.map((app: any) => ({
+        name: app.name || app.id,
+        value: app.id,
+      }));
+    }
+    return [];
+  } catch (err: any) {
+    return [{ name: `Error: ${err?.message || err}`, value: '' }];
+  }
 }
 
 /**

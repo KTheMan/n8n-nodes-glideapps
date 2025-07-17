@@ -96,9 +96,12 @@ const npmApiProperties = [
     },
     // --- Table fields ---
     {
-        displayName: 'App ID',
+        displayName: 'App Name or ID',
         name: 'appId',
-        type: 'string',
+        type: 'options',
+        typeOptions: {
+            loadOptionsMethod: 'getAppsDropdown',
+        },
         default: '',
         required: true,
         displayOptions: {
@@ -107,7 +110,7 @@ const npmApiProperties = [
                 resource: ['table', 'row'],
             },
         },
-        description: 'The App ID for your Glide app',
+        description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
     },
     {
         displayName: 'Table Name or ID',
@@ -115,6 +118,7 @@ const npmApiProperties = [
         type: 'options',
         typeOptions: {
             loadOptionsMethod: 'getTablesDropdown',
+            loadOptionsDependsOn: ['appId'],
         },
         default: '',
         required: true,
@@ -134,7 +138,7 @@ const npmApiProperties = [
         type: 'options',
         typeOptions: {
             loadOptionsMethod: 'getRowsDropdown',
-            loadOptionsDependsOn: ['tableName', 'rowSearch', 'rowLimit'],
+            loadOptionsDependsOn: ['appId', 'tableName', 'rowSearch', 'rowLimit'],
         },
         default: '',
         required: true,
@@ -215,7 +219,7 @@ const npmApiProperties = [
         type: 'options',
         typeOptions: {
             loadOptionsMethod: 'getColumnsDropdown',
-            loadOptionsDependsOn: ['tableName', 'columnTypeFilter'],
+            loadOptionsDependsOn: ['appId', 'tableName', 'columnTypeFilter'],
         },
         default: '',
         displayOptions: {
@@ -254,7 +258,7 @@ const npmApiProperties = [
         type: 'options',
         typeOptions: {
             loadOptionsMethod: 'getRowsWithConfirmationDropdown',
-            loadOptionsDependsOn: ['tableName', 'confirmRowFetch', 'rowLimit'],
+            loadOptionsDependsOn: ['appId', 'tableName', 'confirmRowFetch', 'rowLimit'],
         },
         default: '',
         displayOptions: {
@@ -316,9 +320,15 @@ export class Glide implements INodeType {
 
     methods = {
         loadOptions: {
+            // App dropdown for npm API
+            async getAppsDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
+                const creds = await this.getCredentials('glideappsApi');
+                const apiKey = creds.apiKey as string;
+                return safeDropdown(() => glideHelpers.getApps(apiKey));
+            },
             // Dynamic tables dropdown for npm API
             async getTablesDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
-                const creds = await this.getCredentials('glideApi');
+                const creds = await this.getCredentials('glideappsApi');
                 const apiKey = creds.apiKey as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 return safeDropdown(async () => {
@@ -328,7 +338,7 @@ export class Glide implements INodeType {
                 });
             },
             async getRowsDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
-                const creds = await this.getCredentials('glideApi');
+                const creds = await this.getCredentials('glideappsApi');
                 const apiKey = creds.apiKey as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 const tableName = this.getNodeParameter('tableName', 0) as string;
@@ -344,7 +354,7 @@ export class Glide implements INodeType {
                 });
             },
             async getColumnsDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
-                const creds = await this.getCredentials('glideApi');
+                const creds = await this.getCredentials('glideappsApi');
                 const apiKey = creds.apiKey as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 const tableName = this.getNodeParameter('tableName', 0) as string;
@@ -360,7 +370,7 @@ export class Glide implements INodeType {
                 });
             },
             async getRowsWithConfirmationDropdown(this: ILoadOptionsFunctions): Promise<DropdownOption[]> {
-                const creds = await this.getCredentials('glideApi');
+                const creds = await this.getCredentials('glideappsApi');
                 const apiKey = creds.apiKey as string;
                 const appId = this.getNodeParameter('appId', 0) as string;
                 const tableName = this.getNodeParameter('tableName', 0) as string;

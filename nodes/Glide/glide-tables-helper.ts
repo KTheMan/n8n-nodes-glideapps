@@ -1,3 +1,22 @@
+// Use CommonJS require for compatibility
+const glideTablesModule = require('@glideapps/tables');
+const GlideTables = glideTablesModule.GlideTables || glideTablesModule.default;
+
+/**
+ * Fetch list of apps (teams) for the authenticated user from the Glide npm package.
+ * Returns an array of { name, value } for n8n dropdowns.
+ */
+export async function getAppsNpm(client: InstanceType<typeof GlideTables>): Promise<DropdownOption[]> {
+  try {
+    const apps = await client.getApps();
+    return apps.map((app: any) => ({
+      name: app.name || app.id,
+      value: app.id,
+    }));
+  } catch (err: any) {
+    return [{ name: `Error: ${err?.message || err}`, value: '' }];
+  }
+}
 
 // =========================
 // Types
@@ -66,33 +85,13 @@ export async function getColumns(client: InstanceType<typeof GlideTables>, table
 }
 
 /**
- * Fetch list of apps (teams) (for dropdowns).
- * Placeholder: implement as needed for your Glide setup.
- */
-import axios from 'axios';
-
-/**
- * Fetch list of apps (teams) for the authenticated user from the Glide API.
- * Returns an array of { name, value } for n8n dropdowns.
+ * Fetch list of apps (teams) for the authenticated user from the Glide npm package (for dropdowns).
+ * This replaces the old v1 endpoint usage.
  */
 export async function getApps(apiKey: string): Promise<DropdownOption[]> {
   try {
-    const response = await axios.get('https://api.glideapps.com/apps', {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'application/json',
-      },
-    });
-    // The response shape may be { data: [...] } or just [...], handle both
-    const apps = Array.isArray(response.data)
-      ? response.data
-      : Array.isArray(response.data?.data)
-        ? response.data.data
-        : [];
-    return apps.map((app: any) => ({
-      name: app.name || app.id,
-      value: app.id,
-    }));
+    const client = new GlideTables({ apiKey });
+    return getAppsNpm(client);
   } catch (err: any) {
     return [{ name: `Error: ${err?.message || err}`, value: '' }];
   }
@@ -103,7 +102,15 @@ export async function getApps(apiKey: string): Promise<DropdownOption[]> {
  * Placeholder: implement as needed for your Glide setup.
  */
 export async function getTables(client: InstanceType<typeof GlideTables>) {
-  throw new Error('Dynamic table listing not implemented. Implement this based on your Glide setup.');
+  try {
+    const tables = await client.getTables();
+    return tables.map((table: any) => ({
+      name: table.name || table.id,
+      value: table.id,
+    }));
+  } catch (err: any) {
+    return [{ name: `Error: ${err?.message || err}`, value: '' }];
+  }
 }
 
 /**
@@ -239,9 +246,6 @@ export async function getAllRowsPaginated(
 // =========================
 // Internal Utilities
 // =========================
-
-const glideTablesModule = require('@glideapps/tables');
-const GlideTables = glideTablesModule.GlideTables || glideTablesModule.default;
 
 function getRowsInternal(client: InstanceType<typeof GlideTables>, tableName: string, limit = 100): Promise<any[]> {
   return queryTable(client, { appID: '', tableName, startAt: undefined })

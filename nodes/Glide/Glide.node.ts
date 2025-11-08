@@ -1,6 +1,13 @@
 
 
-import { INodeType, INodeTypeDescription, ILoadOptionsFunctions } from 'n8n-workflow';
+import {
+    INodeType,
+    INodeTypeDescription,
+    ILoadOptionsFunctions,
+    IExecuteFunctions,
+    INodeExecutionData,
+    NodeOperationError,
+} from 'n8n-workflow';
 import { N8NPropertiesBuilder, N8NPropertiesBuilderConfig } from '@devlikeapro/n8n-openapi-node';
 import * as doc from './openapi.json';
 import * as glideHelpers from './glide-tables-helper';
@@ -79,14 +86,17 @@ const npmApiProperties = [
         noDataExpression: true,
         options: [
             // Table operations
-            { name: 'Get Many', value: 'getAll', action: 'List many tables', resource: 'table' },
-            { name: 'Create Table', value: 'create', action: 'Create a new table', resource: 'table' },
-            { name: 'Delete Table', value: 'delete', action: 'Delete a table', resource: 'table' },
+            { name: 'Get Many', value: 'tableGetAll', action: 'List many tables', resource: 'table' },
+            { name: 'Create', value: 'tableCreate', action: 'Create a new table', resource: 'table' },
+            { name: 'Delete', value: 'tableDelete', action: 'Delete a table', resource: 'table' },
             // Row operations
-            { name: 'Get Row', value: 'get', action: 'Get a single row', resource: 'row' },
-            { name: 'Update Row', value: 'update', action: 'Update a row', resource: 'row' },
+            { name: 'Add', value: 'rowCreate', action: 'Add a new row', resource: 'row' },
+            { name: 'Remove', value: 'rowDelete', action: 'Delete a row', resource: 'row' },
+            { name: 'Get', value: 'rowGet', action: 'Get a single row', resource: 'row' },
+            { name: 'Get All', value: 'rowGetAll', action: 'Get all rows', resource: 'row' },
+            { name: 'Update', value: 'rowUpdate', action: 'Update a row', resource: 'row' },
         ],
-        default: 'getAll',
+        default: 'tableGetAll',
         required: true,
         displayOptions: {
             show: {
@@ -126,7 +136,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row', 'table'],
-                operation: ['getAll', 'get', 'create', 'update', 'delete'],
+                operation: ['tableGetAll', 'tableCreate', 'tableDelete', 'rowGet', 'rowCreate', 'rowUpdate', 'rowDelete', 'rowGetAll'],
             },
         },
         description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
@@ -146,7 +156,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['get', 'update', 'delete'],
+                operation: ['rowGet', 'rowUpdate', 'rowDelete'],
             },
         },
         description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
@@ -161,10 +171,10 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['create', 'update'],
+                operation: ['rowCreate', 'rowUpdate'],
             },
         },
-        description: 'Row data as JSON object',
+        description: 'Row data as JSON object with column names as keys',
     },
     // --- Advanced/optional fields ---
     {
@@ -176,7 +186,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['getAll'],
+                operation: ['rowGetAll'],
             },
         },
         description: 'Filter rows by text (applies to all columns)',
@@ -194,7 +204,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['getAll'],
+                operation: ['rowGetAll'],
             },
         },
         description: 'Maximum number of rows to fetch for dropdowns',
@@ -208,7 +218,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['getAll'],
+                operation: ['rowGetAll'],
             },
         },
         description: 'Whether to enable fetching rows for preview or selection if the table is large',
@@ -226,7 +236,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['get', 'update'],
+                operation: ['rowGet', 'rowUpdate'],
             },
         },
         description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
@@ -247,7 +257,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['get', 'update'],
+                operation: ['rowGet', 'rowUpdate'],
             },
         },
         description: 'Filter columns by type for the dropdown',
@@ -265,7 +275,7 @@ const npmApiProperties = [
             show: {
                 apiType: ['npm'],
                 resource: ['row'],
-                operation: ['getAll'],
+                operation: ['rowGetAll'],
             },
         },
         description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
@@ -384,4 +394,99 @@ export class Glide implements INodeType {
             },
         },
     };
+
+    async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+        const items = this.getInputData();
+        const returnData: INodeExecutionData[] = [];
+        const apiType = this.getNodeParameter('apiType', 0) as string;
+
+        // Only handle npm API operations here; OpenAPI operations are handled by the framework
+        if (apiType !== 'npm') {
+            throw new NodeOperationError(this.getNode(), 'OpenAPI operations are not yet implemented in execute method. Use npm API type.');
+        }
+
+        const resource = this.getNodeParameter('resource', 0) as string;
+        const operation = this.getNodeParameter('operation', 0) as string;
+
+        for (let i = 0; i < items.length; i++) {
+            try {
+                const creds = await this.getCredentials('glideappsApi');
+                const token = creds.token as string;
+                const appId = this.getNodeParameter('appId', i) as string;
+                const client = glideHelpers.getGlideTablesClient(token, appId);
+
+                if (resource === 'table') {
+                    if (operation === 'tableGetAll') {
+                        // Get all tables
+                        const tables = await client.getTables();
+                        const formattedTables = tables.map((table: any) => ({
+                            name: table.props?.name || 'Unknown',
+                            id: table.props?.table || '',
+                        }));
+                        returnData.push({ json: { tables: formattedTables } });
+                    } else {
+                        throw new NodeOperationError(this.getNode(), `Table operation '${operation}' is not yet implemented`);
+                    }
+                } else if (resource === 'row') {
+                    const tableName = this.getNodeParameter('tableName', i) as string;
+
+                    if (operation === 'rowCreate') {
+                        // Add row
+                        const rowData = this.getNodeParameter('rowData', i) as string;
+                        const columnValues = typeof rowData === 'string' ? JSON.parse(rowData) : rowData;
+                        const result = await glideHelpers.addRowToTable(client, {
+                            tableName,
+                            columnValues,
+                        });
+                        returnData.push({ json: result });
+                    } else if (operation === 'rowUpdate') {
+                        // Update row
+                        const rowId = this.getNodeParameter('rowId', i) as string;
+                        const rowData = this.getNodeParameter('rowData', i) as string;
+                        const columnValues = typeof rowData === 'string' ? JSON.parse(rowData) : rowData;
+                        const result = await glideHelpers.setColumnsInRow(client, {
+                            tableName,
+                            rowID: rowId,
+                            columnValues,
+                        });
+                        returnData.push({ json: result });
+                    } else if (operation === 'rowDelete') {
+                        // Delete row
+                        const rowId = this.getNodeParameter('rowId', i) as string;
+                        const result = await glideHelpers.deleteRow(client, {
+                            tableName,
+                            rowID: rowId,
+                        });
+                        returnData.push({ json: result });
+                    } else if (operation === 'rowGet') {
+                        // Get single row
+                        const rowId = this.getNodeParameter('rowId', i) as string;
+                        const row = await glideHelpers.getRowById(client, tableName, rowId);
+                        returnData.push({ json: row || {} });
+                    } else if (operation === 'rowGetAll') {
+                        // Get all rows
+                        const limit = this.getNodeParameter('rowLimit', i, 100) as number;
+                        const rows = await glideHelpers.getAllRowsPaginated(client, tableName, limit, 10);
+                        returnData.push({ json: { rows } });
+                    } else {
+                        throw new NodeOperationError(this.getNode(), `Row operation '${operation}' is not supported`);
+                    }
+                } else {
+                    throw new NodeOperationError(this.getNode(), `Resource '${resource}' is not supported`);
+                }
+            } catch (error) {
+                if (this.continueOnFail()) {
+                    returnData.push({
+                        json: {
+                            error: error instanceof Error ? error.message : String(error),
+                        },
+                    });
+                    continue;
+                }
+                throw error;
+            }
+        }
+
+        return [returnData];
+    }
 }

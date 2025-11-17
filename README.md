@@ -35,6 +35,18 @@ This node supports various Glide Big Tables API operations including:
 - Replace table schema or data
 - Manage stashes for bulk data operations
 
+### Row Operations (Zapier/Make Integration Parity)
+
+The npm API (@glideapps/tables) provides full feature parity with Glide's Zapier and Make integrations, supporting all essential row operations:
+
+- **Add Row**: Create new rows with column values
+- **Get Row**: Retrieve a single row by ID
+- **Get All Rows**: Fetch all rows from a table with pagination support
+- **Update Row**: Modify existing row values
+- **Delete Row**: Remove rows from tables
+
+These operations enable seamless integration with automation workflows and external systems.
+
 ### Glide Tables Helper Module (for n8n GUI)
 
 This package includes a helper module for the official `@glideapps/tables` package, focused on dynamic dropdowns and safe UX for n8n nodes.
